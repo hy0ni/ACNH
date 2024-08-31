@@ -3,7 +3,6 @@ import axios from 'axios';
 import VillagerList from '../component/VillagerList';
 import { villagers } from 'animal-crossing';
 
-
 function Home() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +30,13 @@ function Home() {
         // 매칭되는 주민이 없으면 해당 주민 제외
         return null;
       })
-        .filter(villager => villager !== null); // null이 아닌 객체만 필터링
+        .filter(villager => villager !== null) // null이 아닌 객체만 필터링
+        .filter((villager, index, self) =>
+          // 이름이 배열에서 처음 등장하는 경우에만 포함
+          self.findIndex(v => v.name === villager.name) === index
+        );
+      console.log(villagers)
+      console.log(animal)
       setData(animal);
     } catch (error) {
       setError(error.message);
