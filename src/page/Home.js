@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import VillagerList from '../component/VillagerList';
 import { villagers } from 'animal-crossing';
+import { genderKr, personalityKr, speciesKr } from '../translations/translations';
+
 
 function Home() {
   const [data, setData] = useState([]);
@@ -25,10 +27,14 @@ function Home() {
           return {
             ...currentVillager,
             name: matchingVillager.translations.kRko,
+            species: speciesKr[matchingVillager.species],
+            personality: personalityKr[matchingVillager.personality],
+            gender: genderKr[matchingVillager.gender],
           }
         }
         return null;// 일치하는 Villager가 없을 때는 null을 반환
       });
+      // console.log(animal);
       setData(animal);
     } catch (error) {
       setError(error.message);
