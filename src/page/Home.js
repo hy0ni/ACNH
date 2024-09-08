@@ -62,7 +62,6 @@ function Home() {
 
   return (
     <div className='container'>
-      <h1>동물의 숲</h1>
       <div className="species-selector">
         <select
           value={selectedSpecies}
