@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import VillagerList from '../component/VillagerList';
 import { villagers } from 'animal-crossing';
 import { genderKr, personalityKr, speciesKr } from '../translations/translations';
-
+import { fetchVillagers } from '../api/api';
 
 function Home() {
   const [data, setData] = useState([]);
@@ -12,17 +11,9 @@ function Home() {
   const [selectedSpecies, setSelectedSpecies] = useState('');
 
   const fetchData = async () => {
-    const URL = "https://api.nookipedia.com/villagers?game=nh&game=pc";
-
     try {
-      setLoading(true);
-      const response = await axios.get(URL, {
-        headers: {
-          "X-API-KEY": process.env.REACT_APP_API_KEY,
-          "Accept-Version": "1.0.0",
-        },
-      });
-      const animal = response.data.map(currentVillager => {
+      const data = await fetchVillagers();
+      const animal = data.map(currentVillager => {
         const matchingVillager = villagers.find(villager => villager.name === currentVillager.name);
         if (matchingVillager) {
           return {
