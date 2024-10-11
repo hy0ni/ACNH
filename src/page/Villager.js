@@ -89,16 +89,21 @@ function Villager() {
   return (
     <div className='container'>
       <div className="species-selector">
-        <select
-          value={selectedSpecies}
-          onChange={(e) => handleSpeciesClick(e.target.value)}>
-          {Object.values(speciesKr).map((species, idx) => (
-            <option key={idx} value={species}>
-              {species}
-            </option>
-          ))}
-          <option value="">전체 보기</option>
-        </select>
+        <button
+          onClick={() => handleSpeciesClick('')}
+          className={`species-button ${selectedSpecies === '' ? 'active' : ''}`}
+        >
+          전체 보기
+        </button>
+        {Object.values(speciesKr).map((species, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleSpeciesClick(species)}
+            className={`species-button ${selectedSpecies === species ? 'active' : ''}`}
+          >
+            {species}
+          </button>
+        ))}
       </div>
 
       <VillagerList villagers={visibleVillagers} />
