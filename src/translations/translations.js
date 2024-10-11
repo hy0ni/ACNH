@@ -49,10 +49,22 @@ const personalityKr = {
   "Normal": "친절함",
 }
 
+const personalityToMBTI = {
+  "Smug": "ENTP",
+  "Big Sister": "ESFJ",
+  "Lazy": "ISFP",
+  "Cranky": "ISTJ",
+  "Snooty": "INFJ",
+  "Peppy": "ESFP",
+  "Jock": "ESTP",
+  "Normal": "ISFJ"
+};
+
+
 // 성별
 const genderKr = {
   "Male": "남 ♂",
   "Female": "여 ♀",
 }
 
-export { speciesKr, personalityKr, genderKr };
+export { speciesKr, personalityKr, genderKr, personalityToMBTI };

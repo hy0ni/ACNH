@@ -11,7 +11,7 @@ const requestOptions = axios.create({
 
 export async function fetchVillagers() {
   try {
-    const response = await requestOptions.get('/villagers?game=nh&game=pc');
+    const response = await requestOptions.get('/villagers?game=nh');
     return response.data;
   } catch (error) {
     console.error('주민정보를 불러오는중 오류가 발생하였습니다.', error);

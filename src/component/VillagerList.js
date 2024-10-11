@@ -10,6 +10,7 @@ function VillagerList({ villagers }) {
           <p>종: {villager.species}</p>
           <p>성격: {villager.personality}</p>
           <p>성별: {villager.gender}</p>
+          <p>MBTI: {villager.mbti || '정보 없음'}</p>
         </li>
       ))}
     </ul>
