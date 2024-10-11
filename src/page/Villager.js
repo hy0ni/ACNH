@@ -52,20 +52,16 @@ function Villager() {
 
   // 페이지네이션을 위한 데이터 필터링
   useEffect(() => {
-    if (page === 1) return; // 첫 페이지에서는 이미 데이터를 불러왔으므로 동작X
-
-    const startIndex = (page - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
     const filteredData = selectedSpecies
       ? data.filter(villager => villager.species === selectedSpecies)
       : data;
 
-    setVisibleVillagers(prevVillagers => [
-      ...prevVillagers,
-      ...filteredData.slice(startIndex, endIndex)
-    ]);
+    // 페이지 번호에 따라 주민 목록 설정
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
 
-    setHasMore(filteredData.length > endIndex);
+    setVisibleVillagers(filteredData.slice(0, endIndex)); // 처음 로딩 시에는 전체 데이터의 앞부분만 보여줌
+    setHasMore(filteredData.length > endIndex); // 더 불러올 데이터가 있는지 확인
   }, [page, selectedSpecies, data]);
 
   // 동물 종류 선택 처리
@@ -87,8 +83,7 @@ function Villager() {
     if (node) observer.current.observe(node); // 새로 로드된 엘리먼트에 observer 적용
   }, [loading, hasMore]);
 
-
-  if (loading) return <p>Loading...</p>;
+  if (loading && page === 1) return <p>Loading...</p>; // 처음 로딩 중일 때만 표시
   if (error) return <p>에러: {error}</p>;
 
   return (
