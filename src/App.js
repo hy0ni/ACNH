@@ -4,9 +4,11 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
-import Home from './page/Home';
-import MusicPlayer from './page/MusicPlayer';
 import Header from './component/Header';
+import Home from './page/Home';
+import Login from './page/Login';
+import MusicPlayer from './page/MusicPlayer';
+import Signup from './page/Signup';
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
       <Header />
       <Routes>
         <Route path='/' element={<Home />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/signup' element={<Signup />} />
         <Route path='/music' element={<MusicPlayer />} />
       </Routes>
     </Router>
