@@ -20,7 +20,7 @@ function Header() {
 
   return (
     <header className='header'>
-      <h1 className='title'>VillageHub</h1>
+      <h1 className='title' onClick={() => navigate('/')}>VillageHub</h1>
       <nav>
         {user ? (
           <>
@@ -30,8 +30,9 @@ function Header() {
         ) : (
           <button className='btn' onClick={() => navigate('/login')} aria-label="로그인 페이지로 이동">로그인</button>
         )}
+        <button className='btn' onClick={() => navigate('/villager')}>주민 리스트</button>
       </nav>
-    </header>
+    </header >
   )
 }
 export default Header;
