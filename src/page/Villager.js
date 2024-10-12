@@ -4,17 +4,20 @@ import VillagerList from '../component/VillagerList';
 import useVillagersData from '../hooks/useVillagersData';
 
 function Villager() {
-  const { data, loading, error } = useVillagersData(); // 주민 데이터 가져오기
+  const { data, loading, error } = useVillagersData();
   const [selectedSpecies, setSelectedSpecies] = useState('');
   const [page, setPage] = useState(1);
   const [visibleVillagers, setVisibleVillagers] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [ownedVillagers, setOwnedVillagers] = useState([]);
 
   const ITEMS_PER_PAGE = 20;
   const observer = useRef();
 
   // 페이지네이션을 위한 데이터 필터링
   useEffect(() => {
+    if (!data) return; // 데이터가 없으면 종료
+
     const filteredData = selectedSpecies
       ? data.filter(villager => villager.species === selectedSpecies)
       : data;
@@ -32,15 +35,29 @@ function Villager() {
     setVisibleVillagers([]);
   };
 
+  const toggleOwnership = (villagerName) => {
+    setOwnedVillagers((prevOwned) => {
+      if (prevOwned.includes(villagerName)) {
+        // 이미 소유하고 있다면, 목록에서 제거
+        return prevOwned.filter(name => name !== villagerName);
+      } else {
+        // 소유하지 않았다면, 목록에 추가
+        return [...prevOwned, villagerName];
+      }
+    });
+  };
+
   // 무한 스크롤을 위한 IntersectionObserver 설정
   const lastVillagerRef = useCallback(node => {
     if (loading) return;
     if (observer.current) observer.current.disconnect(); // 기존 observer 해제
+
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
         setPage(prevPage => prevPage + 1); // 페이지 증가
       }
     });
+
     if (node) observer.current.observe(node); // 새로 로드된 엘리먼트에 observer 적용
   }, [loading, hasMore]);
 
@@ -67,7 +84,11 @@ function Villager() {
         ))}
       </div>
 
-      <VillagerList villagers={visibleVillagers} />
+      <VillagerList
+        villagers={visibleVillagers}
+        ownedVillagers={ownedVillagers}
+        toggleOwnership={toggleOwnership}
+      />
 
       {/* 마지막 주민에 ref 연결 */}
       <div ref={lastVillagerRef} />

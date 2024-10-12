@@ -1,6 +1,6 @@
 import '../css/VillagerList.css';
 
-function VillagerList({ villagers }) {
+function VillagerList({ villagers, ownedVillagers, toggleOwnership }) {
   return (
     <ul className="villager-list">
       {villagers.map((villager, idx) => (
@@ -11,6 +11,12 @@ function VillagerList({ villagers }) {
           <p>성격: {villager.personality}</p>
           <p>성별: {villager.gender}</p>
           <p>MBTI: {villager.mbti || '정보 없음'}</p>
+          <button
+            onClick={() => toggleOwnership(villager.name)} // 이름 전달
+            style={{ color: ownedVillagers.includes(villager.name) ? 'red' : 'gray' }} // 소유한 주민 목록 이름이 일치하면 red, 없으면 gray
+          >
+            ♥
+          </button>
         </li>
       ))}
     </ul>
