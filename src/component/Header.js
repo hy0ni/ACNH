@@ -25,6 +25,7 @@ function Header() {
         {user ? (
           <>
             <h2>Welcome, {user.email}</h2>
+            <button className='btn' onClick={() => navigate('/mypage')}>마이페이지</button>
             <button className='btn' onClick={handleLogout}>로그아웃</button>
           </>
         ) : (
