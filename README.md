@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+# 동물의 숲 주민 정보 사이트(VillageHub)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+개인 프로젝트 [React, Firebase, HTML, CSS]
 
-## Available Scripts
+## 프로젝트 소개
 
-In the project directory, you can run:
+동물의 숲 API를 활용하여 주민 데이터를 불러오고, Firebase를 이용한 로그인 및 회원가입 기능을 구현한 웹 애플리케이션입니다. 사용자는 자신의 계정을 만들고 로그인하여, 좋아하는 주민을 찜할 수 있는 기능을 제공합니다. 찜한 주민은 마이페이지에서 확인할 수 있으며, 메인 페이지에서는 매일 랜덤으로 선정된 주민을 표시하여 새로운 주민을 발견할 수 있는 기회를 제공합니다.
 
-### `npm start`
+## 기능
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. `주민 데이터 조회`: 동물의 숲 API를 통해 다양한 주민 정보를 불러와 사용자에게 제공합니다.
+2. `로그인/회원가입`: Firebase 인증을 통해 사용자 계정을 생성하고 관리할 수 있습니다.
+3. `오늘의 랜덤 주민 카드 표시`: 메인 페이지에서는 매일 랜덤으로 선정된 주민을 표시하여, 사용자가 새로운 주민을 발견할 수 있도록 합니다.
+4. `주민 목록 필터링 및 검색 기능`: 주민의 종류와 성격으로 목록을 필터링하여 사용자가 원하는 주민 카드를 쉽게 찾을 수 있습니다.
+5. `주민 찜하기`: 로그인한 사용자는 마음에 드는 주민을 찜하고, 찜한 주민 목록은 마이페이지에서 관리할 수 있습니다.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 추가 사항
 
-### `npm test`
+이 프로젝트에서는 한글 번역이 제공되지 않는 API를 보완하기 위해, 주민 이름 번역본을 제공하는 공개 Google 스프레드시트에서 생성된 데이터베이스를 활용했습니다. 또한, 일부 번역되지 않았거나 중복된 부분을 보완하고 주민 데이터에 대한 추가 정보를 제공하여 사용자에게 보다 친숙한 경험을 제공하기 위해 translations.js 파일을 구현했습니다.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```javascript
+// 종류
+const speciesKr = {
+  "Alligator": "악어",
+  "Anteater": "개미핥기",
+  ...
+};
 
-### `npm run build`
+// 성격
+const personalityKr = {
+  "Smug": "느끼함",
+  "Big Sister": "단순활발",
+  ...
+};
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+// 성격에 따른 MBTI 정보
+const personalityToMBTI = {
+  "Smug": "ENTP",
+  "Big Sister": "ESFJ",
+  ...
+};
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+// 성별
+const genderKr = {
+  "Male": "남 ♂",
+  "Female": "여 ♀",
+};
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+export { speciesKr, personalityKr, genderKr, personalityToMBTI };
 
-### `npm run eject`
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```javascript
+const fetchData = async () => {
+  try {
+    const villagersData = await fetchVillagers();
+    const animal = villagersData
+      .map((currentVillager) => {
+        const matchingVillager = villagers.find(
+          (villager) => villager.name === currentVillager.name
+        );
+        if (matchingVillager) {
+          const personality = matchingVillager.personality;
+          return {
+            ...currentVillager,
+            name: matchingVillager.translations.kRko, // 한글 번역된 이름
+            species: speciesKr[matchingVillager.species], // 한글 번역된 종
+            personality: personalityKr[matchingVillager.personality], // 한글 번역된 성격
+            gender: genderKr[matchingVillager.gender], // 한글 번역된 성별
+            mbti: personalityToMBTI[personality], // MBTI 정보
+          };
+        }
+        return null;
+      })
+      .filter((villager) => villager !== null);
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    setData(animal);
+  } catch (error) {
+    setError(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+useEffect(() => {
+  fetchData();
+}, []);
+```
