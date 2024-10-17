@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { speciesKr } from '../translations/translations';
 import VillagerList from '../component/VillagerList';
 import useVillagersData from '../hooks/useVillagersData';
+import { auth, db } from '../firebase';
+import { doc, setDoc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 
 function Villager() {
   const { data, loading, error } = useVillagersData();
@@ -10,13 +12,47 @@ function Villager() {
   const [visibleVillagers, setVisibleVillagers] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [ownedVillagers, setOwnedVillagers] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(!!auth.currentUser);// 사용자 로그인 상태 관리
 
   const ITEMS_PER_PAGE = 20;
   const observer = useRef();
 
+  // Firestore에서 유저가 소유한 주민 데이터 불러오기
+  useEffect(() => {
+    const fetchOwnedVillagers = async () => {
+      setIsLoading(true);
+      const user = auth.currentUser;
+
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          setOwnedVillagers(userDoc.data().ownedVillagers || []);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchOwnedVillagers();
+  }, []);
+
+  // 인증 상태 변화 감지
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      setIsUserLoggedIn(!!user);// 로그인 상태 업데이트
+      if (!user) {
+        setOwnedVillagers([]);// 로그아웃 시 소유한 주민 리스트 초기화
+      }
+    });
+
+    return () => unsubscribe();// 컴포넌트 언마운트 시 리스너 해제
+  }, []);
+
   // 페이지네이션을 위한 데이터 필터링
   useEffect(() => {
-    if (!data) return; // 데이터가 없으면 종료
+    if (!data) return;
 
     const filteredData = selectedSpecies
       ? data.filter(villager => villager.species === selectedSpecies)
@@ -25,43 +61,67 @@ function Villager() {
     const startIndex = (page - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
 
-    setVisibleVillagers(filteredData.slice(0, endIndex)); // 주민 목록 설정
+    setVisibleVillagers(filteredData.slice(0, endIndex));
     setHasMore(filteredData.length > endIndex);
   }, [page, selectedSpecies, data]);
 
+  // 종 선택 핸들러
   const handleSpeciesClick = (species) => {
     setSelectedSpecies(species);
-    setPage(1); // 동물 종류를 변경하면 첫 페이지로 돌아가기
+    setPage(1);
     setVisibleVillagers([]);
   };
 
-  const toggleOwnership = (villagerName) => {
+  // 주민 선택/제거 Firestore 업데이트
+  const toggleOwnership = async (villagerName) => {
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert('로그인한 사용자만 주민을 담을 수 있습니다.');
+      return;
+    }
+
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (userDoc.exists()) {
+      updateOwnership(userDocRef, villagerName);
+    } else {
+      await setDoc(userDocRef, { ownedVillagers: [villagerName] });
+      setOwnedVillagers([villagerName]);
+    }
+  };
+
+  // 소유권 업데이트 핸들러
+  const updateOwnership = async (userDocRef, villagerName) => {
     setOwnedVillagers((prevOwned) => {
-      if (prevOwned.includes(villagerName)) {
-        // 이미 소유하고 있다면, 목록에서 제거
-        return prevOwned.filter(name => name !== villagerName);
-      } else {
-        // 소유하지 않았다면, 목록에 추가
-        return [...prevOwned, villagerName];
-      }
+      const isOwned = prevOwned.includes(villagerName);
+      const updateFunction = isOwned ? arrayRemove : arrayUnion;
+
+      updateDoc(userDocRef, {
+        ownedVillagers: updateFunction(villagerName)
+      });
+
+      return isOwned ? prevOwned.filter(name => name !== villagerName) : [...prevOwned, villagerName];
     });
   };
 
   // 무한 스크롤을 위한 IntersectionObserver 설정
   const lastVillagerRef = useCallback(node => {
     if (loading) return;
-    if (observer.current) observer.current.disconnect(); // 기존 observer 해제
+    if (observer.current) observer.current.disconnect();
 
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
-        setPage(prevPage => prevPage + 1); // 페이지 증가
+        setPage(prevPage => prevPage + 1);
       }
     });
 
-    if (node) observer.current.observe(node); // 새로 로드된 엘리먼트에 observer 적용
+    if (node) observer.current.observe(node);
   }, [loading, hasMore]);
 
-  if (loading && page === 1) return <p>Loading...</p>; // 처음 로딩 중일 때만 표시
+  // 로딩 및 에러 처리
+  if (isLoading || (loading && page === 1)) return <p>Loading...</p>;
   if (error) return <p>에러: {error}</p>;
 
   return (
@@ -88,12 +148,12 @@ function Villager() {
         villagers={visibleVillagers}
         ownedVillagers={ownedVillagers}
         toggleOwnership={toggleOwnership}
+        isUserLoggedIn={isUserLoggedIn}// 로그인 상태 전달
       />
 
-      {/* 마지막 주민에 ref 연결 */}
       <div ref={lastVillagerRef} />
 
-      {loading && page > 1 && <p>Loading more...</p>} {/* 추가 데이터 로딩 중일 때 표시 */}
+      {loading && page > 1 && <p>Loading more...</p>}
     </div>
   );
 }
