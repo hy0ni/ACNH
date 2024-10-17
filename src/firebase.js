@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+import { getFirestore } from 'firebase/firestore';
 import { getAuth } from "firebase/auth";
 
 // Firebase configuration (env 파일에 넣기)
@@ -16,6 +17,8 @@ const firebaseConfig = {
 // Firebase 초기화
 const app = initializeApp(firebaseConfig);
 
-// Firebase 인증 객체 가져오기
+// Firestore 및 Auth 초기화
+export const db = getFirestore(app);
 export const auth = getAuth(app);
+
 export default app;
