@@ -1,8 +1,10 @@
 import useVillagersData from '../hooks/useVillagersData';
 import VillagerCard from '../component/VillagerCard';
+import { useState } from 'react';
 
 const Home = () => {
   const { data = [], loading, error } = useVillagersData();
+  const [isRevealed, setIsRevealed] = useState({});
 
   // 랜덤 주민을 선택하는 함수 (매일 바뀜)
   const getDailyRandomVillagers = (data) => {
@@ -26,6 +28,13 @@ const Home = () => {
 
   const dailyRandomVillagers = getDailyRandomVillagers(data);
 
+  const handleCardClick = (villagerId) => {
+    setIsRevealed((prev) => ({
+      ...prev,
+      [villagerId]: true,
+    }));
+  };
+
   return (
     <div className="home-container">
       <h1>오늘의 랜덤 주민 카드</h1>
@@ -34,7 +43,19 @@ const Home = () => {
           <p>오늘의 랜덤 주민이 없습니다.</p>
         ) : (
           dailyRandomVillagers.map(villager => (
-            <VillagerCard key={villager.id} villager={villager} />
+            <div
+              key={villager.id}
+              className={`villager-card ${isRevealed[villager.id] ? 'revealed' : ''}`}
+              onClick={() => handleCardClick(villager.id)}
+            >
+              {!isRevealed[villager.id] ? (
+                <div className="card-back">
+                  <p>카드를 클릭하세요</p>
+                </div>
+              ) : (
+                <VillagerCard villager={villager} />
+              )}
+            </div>
           ))
         )}
       </div>

@@ -1,7 +1,7 @@
 import { auth } from '../firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function Header() {
   const [user, setUser] = useState(null);
@@ -20,7 +20,9 @@ function Header() {
 
   return (
     <header className='header'>
-      <h1 className='title' onClick={() => navigate('/')}>VillageHub</h1>
+      <h1>
+        <Link to="/" className='title'>VillageHub</Link>
+      </h1>
       <nav>
         {user ? (
           <>
